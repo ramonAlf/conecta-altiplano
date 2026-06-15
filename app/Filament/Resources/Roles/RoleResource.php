@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Spatie\Permission\Models\Role;
+use UnitEnum;
 
 class RoleResource extends Resource
 {
@@ -21,6 +22,8 @@ class RoleResource extends Resource
     protected static ?string $pluralModelLabel = 'roles';
 
     protected static ?string $navigationLabel = 'Roles';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Roles';
 
     protected static ?string $model = Role::class;
 
