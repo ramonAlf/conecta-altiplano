@@ -2,15 +2,22 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Spatie\Permission\Models\Role;
 
 class UsersTable
 {
@@ -56,10 +63,47 @@ class UsersTable
                 ViewAction::make()->hiddenLabel(),
                 EditAction::make()->hiddenLabel(),
                 DeleteAction::make()->hiddenLabel(),
+                Action::make('assignRoles')
+                    ->label('Asignar roles')
+                    ->icon(Heroicon::ShieldCheck)
+                    ->hiddenLabel()
+                    ->fillForm(fn(User $record): array => [
+                        'roles' => $record->roles->pluck('id')->all(),
+                    ])
+                    ->schema([
+                        Select::make('roles')
+                            ->label('Roles')
+                            ->multiple()
+                            ->searchable()
+                            ->options(fn(): array => Role::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->required(),
+                    ])
+                    ->action(function (array $data, User $record): void {
+                        $record->syncRoles(
+                            Role::query()->whereIn('id', $data['roles'])->pluck('name')
+                        );
+                    }),
+
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    BulkAction::make('assignRole')
+                        ->label('Asignar rol')
+                        ->icon(Heroicon::ShieldCheck)
+                        ->schema([
+                            Select::make('role_id')
+                                ->label('Rol')
+                                ->searchable()
+                                ->options(fn(): array => Role::query()->orderBy('name')->pluck('name', 'id')->all())
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $role = Role::query()->findOrFail($data['role_id']);
+                            $records->each(fn(User $user) => $user->assignRole($role));
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Rol asignado'),
                 ]),
             ]);
     }
