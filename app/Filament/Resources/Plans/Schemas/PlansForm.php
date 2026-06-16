@@ -71,20 +71,22 @@ class PlansForm
                         }
                     }),
                 Grid::make(3)
+                    ->dehydratedWhenHidden()
                     ->hidden(fn(Get $get): bool => ! $get('has_special_price'))
                     ->columnSpanFull()
+
                     ->schema([
                         DatePicker::make('special_price_start_date')
-                            ->label('Fecha de inicio de precio especial')
-                            ->required(),
+                            ->required(fn(Get $get): bool => $get('has_special_price'))
+                            ->label('Fecha de inicio de precio especial'),
                         DatePicker::make('special_price_end_date')
-                            ->label('Fecha de fin de precio especial')
-                            ->required(),
+                            ->required(fn(Get $get): bool => $get('has_special_price'))
+                            ->label('Fecha de fin de precio especial'),
                         TextInput::make('special_price')
                             ->numeric()
                             ->prefix('$')
-                            ->label('Precio especial')
-                            ->required(),
+                            ->required(fn(Get $get): bool => $get('has_special_price'))
+                            ->label('Precio especial'),
                     ]),
             ]);
     }
