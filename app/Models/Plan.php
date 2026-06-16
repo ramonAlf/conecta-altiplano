@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Plan extends Model
 {
@@ -35,4 +36,9 @@ class Plan extends Model
     protected $enum = [
         'type' => self::TYPE_RESIDENTIAL | self::TYPE_BUSINESS | self::TYPE_ENTERPRISE,
     ];
+
+    public function coverageZones(): BelongsToMany
+    {
+        return $this->belongsToMany(CoverageZone::class);
+    }
 }
